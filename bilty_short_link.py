@@ -1,4 +1,5 @@
 import os
+import argparse
 
 import requests
 from dotenv import load_dotenv
@@ -38,12 +39,20 @@ def check_short_link(link, api_token):
     return response.ok
 
 
+def create_arg_parser():
+    parser = argparse.ArgumentParser('Скрипт помогает укоротить ссылку или посмотреть статистику по короткой ссылке.')
+    parser.add_argument('url')
+    return parser
+
+
 def main():
-    user_url = input('Введите ссылку: ').strip()
-    if check_short_link(user_url, api_token):
-        response = link_total_clicks(user_url, api_token)
+    parser = create_arg_parser()
+    namespace = parser.parse_args()
+
+    if check_short_link(namespace.url, api_token):
+        response = link_total_clicks(namespace.url, api_token)
     else:
-        response = link_shorten(user_url, api_token)
+        response = link_shorten(namespace.url, api_token)
     print(response)
 
 
