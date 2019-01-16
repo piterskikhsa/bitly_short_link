@@ -5,12 +5,12 @@ import requests
 from dotenv import load_dotenv
 
 
-load_dotenv()
-api_token = os.getenv('TOKEN')
-
-
 def format_headers(api_token):
     return {'Authorization': 'Bearer {}'.format(api_token) }
+
+
+def get_split_strip_link(link):
+    return link.split('//')[-1].strip('/')
 
 
 def link_shorten(link, api_token):
@@ -20,32 +20,30 @@ def link_shorten(link, api_token):
     response = requests.post(api_url, headers=headers, json=params)
     if response.ok:
         return response.json()['link']
-    raise ValueError('Ссылка указана не верно.')
+    raise ValueError('Ссылка указана неверно.')
 
 
 def link_total_clicks(link, api_token):
-    link = link.split('//')[-1].strip('/')
-    api_url = 'https://api-ssl.bitly.com/v4/bitlinks/{}/clicks/summary'.format(link)
+    api_url = 'https://api-ssl.bitly.com/v4/bitlinks/{}/clicks/summary'.format(get_split_strip_link(link))
     response = requests.get(api_url, headers=format_headers(api_token))
     if response.ok:
         return response.json()['total_clicks']
-    raise ValueError('Ссылка указана не верно.')
+    raise ValueError('Ссылка указана неверно.')
 
 
 def check_short_link(link, api_token):
-    link = link.split('//')[-1].strip('/')
-    api_url = 'https://api-ssl.bitly.com/v4/bitlinks/{}'.format(link)
+    api_url = 'https://api-ssl.bitly.com/v4/bitlinks/{}'.format(get_split_strip_link(link))
     response = requests.get(api_url, headers=format_headers(api_token))
     return response.ok
 
 
 def create_arg_parser():
     parser = argparse.ArgumentParser('Скрипт помогает укоротить ссылку или посмотреть статистику по короткой ссылке.')
-    parser.add_argument('url')
+    parser.add_argument('url', help='')
     return parser
 
 
-def main():
+def main(api_token):
     parser = create_arg_parser()
     namespace = parser.parse_args()
 
@@ -57,4 +55,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()    
+    load_dotenv()
+    api_token = os.getenv('TOKEN')
+    main(api_token)    
